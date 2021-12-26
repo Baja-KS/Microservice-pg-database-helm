@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Values.name }}-db-config
+data:
+  db-url: {{ .Values.name }}-db-service
+  db-type: postgres
+  db-ssl-mode: disable
+  db-port: "{{ .Values.service.targetPort }}" 
+  db-name : {{ .Values.name }}-db

@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: StatefulSet 
+metadata:
+  name: {{ .Values.name  }}-db-ss
+  labels:
+    app: {{ .Values.name }}-db
+spec:
+  replicas: {{ .Values.deployment.replicaCount }}
+  serviceName: {{ .Values.name }}-db-service
+  selector:
+    matchLabels:
+      app: {{ .Values.name }}-db
+  volumeClaimTemplates:
+    - metadata:
+       name: {{ .Values.name }}-db-vol
+      spec:
+        accessModes: [ "ReadWriteOnce" ]
+        resources:
+          requests:
+            storage: 100Mi
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.name }}-db
+    spec:
+      containers:
+        - name: {{ .Values.deployment.containerName }}
+          image: "{{ .Values.deployment.repo }}:{{ .Values.deployment.tag }}"
+          volumeMounts:
+            - name: {{ .Values.name }}-db-vol
+              mountPath: {{ .Values.deployment.mountPath }}
+          ports:
+            - containerPort: {{ .Values.service.targetPort }}
+          env:
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.name }}-db-secret
+                  key: db-user
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.name }}-db-secret
+                  key: db-password
+            - name: POSTGRES_DB
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Values.name }}-db-config
+                  key: db-name
+             
+
